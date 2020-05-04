@@ -11,6 +11,8 @@ const app = express();
 const news = require('./routes/news');
 const restricted = require('./routes/restricted');
 
+const User = require('./models/User');
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(session({ secret: 'fullstack-news' }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -18,23 +20,35 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
+app.use('/restrito', (req, res, next) => {
+    if('user' in req.session){
+        next();
+    }else{
+        res.redirect('/login');
+    }
+});
+
+app.get('/login', (req, res) => res.render('login'));
+app.post('/login', async(req, res) => {
+    const user = await User.findOne({ username: req.body.username });
+    
+    res.send(user);
+});
 app.get('/', (req, res) => res.render('index'));
 app.use('/noticias', news);
 app.use('/restrito', restricted);
 
-const User = require('./models/User');
-
-const createInitialUser = async() => {
+const createInitialUser = async () => {
     const totalUsers = await User.countDocuments();
 
-    if(totalUsers === 0){
+    if (totalUsers === 0) {
         const user = new User({
             username: 'admin',
             password: '123'
         });
-        
-        user.save(()=> console.log('create initial user!'));
-    }else{
+
+        user.save(() => console.log('create initial user!'));
+    } else {
         console.log('create user skipped!');
     }
 }
