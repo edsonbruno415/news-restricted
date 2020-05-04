@@ -5,7 +5,7 @@ const path = require('path');
 const mongoose = require('mongoose');
 
 const port = process.env.PORT || 3000;
-const mongo = 'mongodb://localhost:27017/noticias' || process.env.MONGO;
+const mongo = process.env.MONGODB || 'mongodb://localhost:27017/noticias';
 const app = express();
 
 const news = require('./routes/news');
@@ -21,18 +21,33 @@ app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
 app.use('/restrito', (req, res, next) => {
-    if('user' in req.session){
-        next();
-    }else{
+    if ('user' in req.session) {
+        return next();
+    } else {
         res.redirect('/login');
     }
 });
 
 app.get('/login', (req, res) => res.render('login'));
-app.post('/login', async(req, res) => {
-    const user = await User.findOne({ username: req.body.username });
-    
-    res.send(user);
+app.post('/login', async (req, res) => {
+    try {
+        const user = await User.findOne({ username: req.body.username });
+        if (user != null) {
+            const isValid = await user.checkPassword(req.body.password);
+            if (isValid) {
+                req.session.user = user;
+                res.redirect('/restrito/noticias');
+            } else {
+                throw new Error('Invalid Password !');
+            }
+        } else {
+            throw new Error('User not found !');
+        }
+    }
+    catch (err) {
+        console.log('Error:', err);
+        res.redirect('/login');
+    }
 });
 app.get('/', (req, res) => res.render('index'));
 app.use('/noticias', news);
@@ -47,9 +62,9 @@ const createInitialUser = async () => {
             password: '123'
         });
 
-        user.save(() => console.log('create initial user!'));
+        user.save(() => console.log('initial user created!'));
     } else {
-        console.log('create user skipped!');
+        console.log('user created skipped!');
     }
 }
 
