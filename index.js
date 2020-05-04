@@ -22,8 +22,26 @@ app.get('/', (req, res) => res.render('index'));
 app.use('/noticias', news);
 app.use('/restrito', restricted);
 
+const User = require('./models/User');
+
+const createInitialUser = async() => {
+    const totalUsers = await User.countDocuments();
+
+    if(totalUsers === 0){
+        const user = new User({
+            username: 'admin',
+            password: '123'
+        });
+        
+        user.save(()=> console.log('create initial user!'));
+    }else{
+        console.log('create user skipped!');
+    }
+}
+
 mongoose.connect(mongo, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => {
+        createInitialUser();
         app.listen(port, () => console.log('Application running on http://localhost:' + port));
     })
     .catch((error) => {
