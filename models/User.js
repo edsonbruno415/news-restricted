@@ -1,11 +1,16 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
 
+/*
+UserSchema.pre('save', async function() {
+    this.password = await getHash(this.password);
+});
 const getHash = async (password) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
     return hash;
 }
+*/
 
 const UserSchema = new mongoose.Schema({
     username: {
@@ -18,9 +23,21 @@ const UserSchema = new mongoose.Schema({
     }
 });
 
-UserSchema.pre('save', async function() {
-    this.password = await getHash(this.password);
-});
+UserSchema.pre('save', function (next) {
+    const user = this;
+  
+    if (!user.isModified('password')) {
+      return next();
+    }
+  
+    bcrypt.genSalt((err, salt) => {
+      bcrypt.hash(user.password, salt, (err, hash) => {
+        user.password = hash;
+        next();
+      });
+    });
+  });
+  
 
 UserSchema.methods.checkPassword = function (password) {
     return new Promise((resolve, reject) => {

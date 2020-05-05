@@ -3,6 +3,7 @@ const session = require('express-session');
 const bodyParser = require('body-parser');
 const path = require('path');
 const mongoose = require('mongoose');
+mongoose.Promise = global.Promise;
 
 const port = process.env.PORT || 3000;
 const mongo = process.env.MONGODB || 'mongodb://localhost:27017/noticias';
@@ -14,6 +15,7 @@ const restricted = require('./routes/restricted');
 const User = require('./models/User');
 
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json({ extended: true }));
 app.use(session({ secret: 'fullstack-news' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -54,7 +56,7 @@ app.use('/noticias', news);
 app.use('/restrito', restricted);
 
 const createInitialUser = async () => {
-    const totalUsers = await User.countDocuments();
+    const totalUsers = await User.countDocuments({ username: 'admin' });
 
     if (totalUsers === 0) {
         const user = new User({
