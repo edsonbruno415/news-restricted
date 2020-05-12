@@ -30,7 +30,7 @@ router.get('/logout', (req, res) => {
 router.post('/login', async (req, res) => {
     try {
         const user = await User.findOne({ username: req.body.username });
-        if (user != null) {
+        if (user) {
             const isValid = await user.checkPassword(req.body.password);
             if (isValid) {
                 req.session.user = user;
