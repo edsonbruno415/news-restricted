@@ -15,6 +15,7 @@ const auth = require('./routes/auth');
 const pages = require('./routes/pages');
 
 const User = require('./models/User');
+const News = require('./models/News');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json({ extended: true }));
@@ -24,27 +25,13 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
 
-app.use((req,res,next)=>{
-    if('user' in req.session){
-       res.locals.user = req.session.user; 
-    }
-    next();
-});
-app.use('/restrito', (req, res, next) => {
-    if ('user' in req.session) {
-        return next();
-    } else {
-        res.redirect('/login');
-    }
-});
-
+app.use('/', auth);
+app.use('/', pages);
 app.use('/noticias', news);
 app.use('/restrito', restricted);
-app.use('/',auth);
-app.use('/', pages);
 
 const createInitialUser = async () => {
-    const totalUsers = await User.countDocuments({ username: 'admin' });
+    const totalUsers = await User.countDocuments({});
 
     if (totalUsers === 0) {
         const user = new User({
