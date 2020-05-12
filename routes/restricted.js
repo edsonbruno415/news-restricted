@@ -4,10 +4,13 @@ const News = require('../models/News');
 
 router.use((req, res, next) => {
   if ('user' in req.session) {
+    if(req.session.user.roles.indexOf('restrito') >= 0){
       return next();
-  } else {
-      res.redirect('/login');
-  }
+    }else{
+      res.redirect('/');
+    }
+  } 
+  res.redirect('/login');
 });
 
 router.get('/', (req, res) => res.send('acesso restrito!'));

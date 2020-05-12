@@ -1,0 +1,14 @@
+<%- include('../partials/header'); %>
+
+      <div class="starter-template">
+            <table>
+                  <% noticias.forEach(noticia => { %>
+                        <tr>
+                              <td> <%= noticia.title %></td>
+                        </tr>
+                  <% });%>
+            </table>
+      </div>
+
+      <%= JSON.stringify(locals) %>
+<%- include('../partials/footer'); %>

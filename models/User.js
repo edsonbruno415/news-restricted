@@ -20,24 +20,28 @@ const UserSchema = new mongoose.Schema({
     password: {
         type: String,
         required: true
+    },
+    roles: {
+        type: [String],
+        enum: ['restrito', 'admin']
     }
 });
 
 UserSchema.pre('save', function (next) {
     const user = this;
-  
+
     if (!user.isModified('password')) {
-      return next();
+        return next();
     }
-  
+
     bcrypt.genSalt((err, salt) => {
-      bcrypt.hash(user.password, salt, (err, hash) => {
-        user.password = hash;
-        next();
-      });
+        bcrypt.hash(user.password, salt, (err, hash) => {
+            user.password = hash;
+            next();
+        });
     });
-  });
-  
+});
+
 
 UserSchema.methods.checkPassword = function (password) {
     return new Promise((resolve, reject) => {
