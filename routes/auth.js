@@ -4,6 +4,7 @@ const User = require('../models/User');
 
 const passport = require('passport');
 const LocalStrategy = require('passport-local').Strategy;
+const FacebookStrategy = require('passport-facebook').Strategy;
 
 router.use(passport.initialize());
 router.use(passport.session());
@@ -29,6 +30,26 @@ passport.use(new LocalStrategy(async(username, password, done)=>{
         }
     }else{
         return done(null, false);
+    }
+}));
+
+passport.use(new FacebookStrategy({
+    clientID: '',
+    clientSecret: '',
+    callbackURL: 'http://localhost:3000/facebook/callback',
+    profileFields: ['id','displayName','email', 'photos']
+},async(acessToken, refreshToken, profile, done)=>{
+    const userDB = await User.findOne({ facebookId: profile.id });
+    if(!userDB){
+        const user = new User({
+            name: profile.displayName,
+            facebookId: profile.id,
+            roles: ['restrito']
+        });
+        await user.save(()=> console.log('Save user facebook!'));
+        done(null, user);
+    }else{
+        done(null, userDB);
     }
 }));
 

@@ -15,12 +15,12 @@ const getHash = async (password) => {
 const UserSchema = new mongoose.Schema({
     username: {
         type: String,
-        required: true
     },
     password: {
         type: String,
-        required: true
     },
+    facebookId: String,
+    name: String,
     roles: {
         type: [String],
         enum: ['restrito', 'admin']
