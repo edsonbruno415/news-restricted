@@ -34,7 +34,7 @@
         <li class="nav-item">
           <a class="nav-link" href="/noticias">Noticias Publicas</a>
         </li>
-        <% if('user' in locals){ %>
+        <% if(locals.user){ %>
         <% if(locals.role === 'restrito'){ %>
         <li class="nav-item">
           <a class="nav-link" href="/restrito/noticias">Noticias Privadas</a>

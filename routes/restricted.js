@@ -3,8 +3,8 @@ const router = express.Router();
 const News = require('../models/News');
 
 router.use((req, res, next) => {
-  if ('user' in req.session) {
-    if(req.session.user.roles.indexOf('restrito') >= 0){
+  if (req.isAuthenticated()) {
+    if(req.user.roles.indexOf('restrito') >= 0){
       return next();
     }else{
       res.redirect('/');
