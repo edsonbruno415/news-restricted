@@ -9,54 +9,60 @@ const FacebookStrategy = require('passport-facebook').Strategy;
 router.use(passport.initialize());
 router.use(passport.session());
 
-passport.serializeUser((user,done)=>{
+passport.serializeUser((user, done) => {
     done(null, user);
 });
 
-passport.deserializeUser((user,done)=>{
+passport.deserializeUser((user, done) => {
     done(null, user);
 });
 
 //definindo estrategia para login local
-passport.use(new LocalStrategy(async(username, password, done)=>{
+passport.use(new LocalStrategy(async (username, password, done) => {
     const user = await User.findOne({ username });
 
-    if(user){
+    if (user) {
         const isValid = await user.checkPassword(password);
-        if(isValid){
+        if (isValid) {
             return done(null, user);
-        }else{
+        } else {
             return done(null, false);
         }
-    }else{
+    } else {
         return done(null, false);
     }
 }));
 
 passport.use(new FacebookStrategy({
-    clientID: '',
-    clientSecret: '',
+    clientID: 'insert ID',
+    clientSecret: 'insert key',
     callbackURL: 'http://localhost:3000/facebook/callback',
-    profileFields: ['id','displayName','email', 'photos']
-},async(acessToken, refreshToken, profile, done)=>{
+    profileFields: ['id', 'displayName', 'email', 'photos']
+}, async (acessToken, refreshToken, profile, done) => {
     const userDB = await User.findOne({ facebookId: profile.id });
-    if(!userDB){
+    if (!userDB) {
         const user = new User({
             name: profile.displayName,
             facebookId: profile.id,
             roles: ['restrito']
         });
-        await user.save(()=> console.log('Save user facebook!'));
+        await user.save(() => console.log('Save user facebook!'));
         done(null, user);
-    }else{
+    } else {
         done(null, userDB);
     }
+}));
+
+router.get('/facebook', passport.authenticate('facebook'));
+router.get('/facebook/callback', passport.authenticate('facebook', {
+    failureRedirect: '/',
+    successRedirect: '/'
 }));
 
 router.use((req, res, next) => {
     if (req.isAuthenticated()) {
         res.locals.user = req.user;
-        if(!req.session.role){
+        if (!req.session.role) {
             req.session.role = req.user.roles[0];
         }
         res.locals.role = req.session.role;
@@ -64,9 +70,9 @@ router.use((req, res, next) => {
     next();
 });
 
-router.get('/change-role/:role',(req, res)=>{
-    if(req.isAuthenticated()){
-        if(req.user.roles.indexOf(req.params.role) >= 0){
+router.get('/change-role/:role', (req, res) => {
+    if (req.isAuthenticated()) {
+        if (req.user.roles.indexOf(req.params.role) >= 0) {
             req.session.role = req.params.role;
         }
     }
@@ -81,7 +87,7 @@ router.get('/logout', (req, res) => {
     });
 });
 
-router.post('/login', passport.authenticate('local',{
+router.post('/login', passport.authenticate('local', {
     successRedirect: '/',
     failureRedirect: '/login',
     failureFlash: false
