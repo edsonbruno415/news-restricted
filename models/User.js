@@ -20,6 +20,7 @@ const UserSchema = new mongoose.Schema({
         type: String,
     },
     facebookId: String,
+    googleId: String,
     name: String,
     roles: {
         type: [String],
